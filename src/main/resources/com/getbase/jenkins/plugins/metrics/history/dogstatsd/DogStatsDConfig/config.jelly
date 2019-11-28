@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+  <f:section title="DogStatsD Config">
+    <f:entry field="agentHostNameEnvVar" title="Agent hostname env var name">
+        <f:textbox />
+    </f:entry>
+    <f:entry field="agentPort" title="Agent port">
+        <f:textbox />
+    </f:entry>
+    <f:entry field="defaultPrefix" title="Default prefix for all metrics">
+        <f:textbox />
+    </f:entry>
+    <f:entry field="globalTags" title="Default global tags to set on all metrics, comma separated list of `key:value` pairs">
+        <f:textbox />
+    </f:entry>
+
+  </f:section>
+
+</j:jelly>
