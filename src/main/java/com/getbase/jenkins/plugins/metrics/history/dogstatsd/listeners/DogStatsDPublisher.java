@@ -67,9 +67,9 @@ public class DogStatsDPublisher extends RunListener<Run<?, ?>> {
     private void writeToDogStatsD(StatsDClient client, BuildMetrics metrics) {
         String[] buildTags = metrics.getTags();
         client.increment(NUMBER_OF_BUILDS, buildTags);
-        client.gauge(BUILD_DURATION, metrics.buildDuration, buildTags);
-        client.gauge(QUEUEING_DURATION, metrics.queueingDuration, buildTags);
-        client.gauge(TOTAL_DURATION, metrics.totalDuration, buildTags);
+        client.time(BUILD_DURATION, metrics.buildDuration, buildTags);
+        client.time(QUEUEING_DURATION, metrics.queueingDuration, buildTags);
+        client.time(TOTAL_DURATION, metrics.totalDuration, buildTags);
         client.gauge(BUILD_RESULT, metrics.buildResultNum, buildTags);
         client.gauge(BUILD_DONE, 1, buildTags);
     }
