@@ -34,9 +34,8 @@ public class DogStatsDPublisher extends RunListener<Run<?, ?>> {
 
     @Override
     public void onCompleted(Run<?, ?> build, TaskListener listener) {
-        try {
+        try (StatsDClient client = getClient()) {
             BuildMetrics metrics = BuildMetrics.fromBuild(build);
-            StatsDClient client = getClient();
             writeToDogStatsD(client, metrics);
             client.close();
             listener.getLogger().println("[DogStatsD Plugin] Completed.");
