@@ -1,9 +1,6 @@
 package com.getbase.jenkins.plugins.metrics.history.dogstatsd.metrics;
 
-import hudson.model.ParameterValue;
-import hudson.model.ParametersAction;
-import hudson.model.Result;
-import hudson.model.Run;
+import hudson.model.*;
 import jenkins.metrics.impl.TimeInQueueAction;
 import org.apache.commons.lang.ArrayUtils;
 
@@ -18,6 +15,8 @@ public class BuildMetrics {
     private static final String BUILD_RESULT = "build_result";
     private static final String BUILD_URL = "build_url";
     private static final String JOB_URL = "job_url";
+    private static final String USERNAME = "username";
+    private static final String AUTOMATED_RUN = "automated_run";
 
     public String jobName;
     public Integer buildNumber;
@@ -26,6 +25,7 @@ public class BuildMetrics {
     public String buildUrl;
     public String jobUrl;
     public Map<String, String> parameters;
+    public String startingUser;
 
     public long buildDuration;
     public long queueingDuration;
@@ -42,6 +42,8 @@ public class BuildMetrics {
                 getTag(BUILD_RESULT, buildResult),
                 getTag(BUILD_URL, buildUrl),
                 getTag(JOB_URL, jobUrl),
+                getTag(USERNAME, startingUser),
+                getTag(AUTOMATED_RUN, startingUser != null ? "false" : "true")
         };
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             ArrayUtils.add(tags, getTag(PARAMETER + "." + entry.getKey(), entry.getValue()));
@@ -61,7 +63,16 @@ public class BuildMetrics {
         bm.jobUrl = build.getParent().getAbsoluteUrl();
         bm.buildUrl = bm.jobUrl + build.getNumber();
         bm.parameters = getBuildParameters(build);
+        bm.startingUser = getUser(build);
         return bm;
+    }
+
+    private static String getUser(Run<?, ?> build) {
+        Cause.UserIdCause cause = build.getCause(Cause.UserIdCause.class);
+        if (cause != null) {
+            return cause.getUserName();
+        }
+        return null;
     }
 
     private static long getQueueingDuration(Run<?, ?> build) {
