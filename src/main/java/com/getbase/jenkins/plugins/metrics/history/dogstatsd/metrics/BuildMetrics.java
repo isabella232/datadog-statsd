@@ -18,6 +18,7 @@ public class BuildMetrics {
     private static final String USERNAME = "username";
     private static final String AUTOMATED_RUN = "automated_run";
     private static final String TOP_LEVEL_DIRECTORY = "top_level_dir";
+    private static final String BUILT_UNDER_SIX_MIN = "build_under_six_min";
 
     public String jobName;
     public Integer buildNumber;
@@ -32,6 +33,7 @@ public class BuildMetrics {
     public long queueingDuration;
     public long totalDuration;
     private String topLevelDir;
+    private boolean builtUnderSixMin;
 
     private String getTag(String key, String value) {
         return key + ":" + value;
@@ -46,6 +48,7 @@ public class BuildMetrics {
                 getTag(JOB_URL, jobUrl),
                 getTag(USERNAME, startingUser),
                 getTag(TOP_LEVEL_DIRECTORY, topLevelDir),
+                getTag(BUILT_UNDER_SIX_MIN, builtUnderSixMin ? "true" : "false"),
                 getTag(AUTOMATED_RUN, startingUser != null ? "false" : "true")
         };
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
@@ -68,6 +71,7 @@ public class BuildMetrics {
         bm.parameters = getBuildParameters(build);
         bm.startingUser = getUser(build);
         bm.topLevelDir = getTopLevelDir(build);
+        bm.builtUnderSixMin = bm.totalDuration / 1000 / 60 < 6;
         return bm;
     }
 
