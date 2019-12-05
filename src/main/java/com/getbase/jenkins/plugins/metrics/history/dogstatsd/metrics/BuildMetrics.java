@@ -17,6 +17,7 @@ public class BuildMetrics {
     private static final String JOB_URL = "job_url";
     private static final String USERNAME = "username";
     private static final String AUTOMATED_RUN = "automated_run";
+    private static final String TOP_LEVEL_DIRECTORY = "top_level_dir";
 
     public String jobName;
     public Integer buildNumber;
@@ -30,6 +31,7 @@ public class BuildMetrics {
     public long buildDuration;
     public long queueingDuration;
     public long totalDuration;
+    private String topLevelDir;
 
     private String getTag(String key, String value) {
         return key + ":" + value;
@@ -43,6 +45,7 @@ public class BuildMetrics {
                 getTag(BUILD_URL, buildUrl),
                 getTag(JOB_URL, jobUrl),
                 getTag(USERNAME, startingUser),
+                getTag(TOP_LEVEL_DIRECTORY, topLevelDir),
                 getTag(AUTOMATED_RUN, startingUser != null ? "false" : "true")
         };
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
@@ -64,7 +67,19 @@ public class BuildMetrics {
         bm.buildUrl = bm.jobUrl + build.getNumber();
         bm.parameters = getBuildParameters(build);
         bm.startingUser = getUser(build);
+        bm.topLevelDir = getTopLevelDir(build);
         return bm;
+    }
+
+    private static String getTopLevelDir(Run<?, ?> build) {
+        String fullName = build.getParent().getFullName();
+        if (fullName.contains("/")) {
+            String[] split = fullName.split("/");
+            if (split.length > 0) {
+                return split[0];
+            }
+        }
+        return fullName;
     }
 
     private static String getUser(Run<?, ?> build) {
