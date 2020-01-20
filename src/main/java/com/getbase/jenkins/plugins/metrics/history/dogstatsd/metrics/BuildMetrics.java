@@ -52,7 +52,7 @@ public class BuildMetrics {
                 getTag(AUTOMATED_RUN, startingUser != null ? "false" : "true")
         };
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            ArrayUtils.add(tags, getTag(PARAMETER + "." + entry.getKey(), entry.getValue()));
+            tags = (String[]) ArrayUtils.add(tags, getTag(PARAMETER + "." + entry.getKey(), entry.getValue()));
         }
         return tags;
     }
