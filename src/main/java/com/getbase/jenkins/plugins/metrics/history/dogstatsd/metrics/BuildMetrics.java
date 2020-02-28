@@ -6,6 +6,7 @@ import jenkins.metrics.impl.TimeInQueueAction;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.ArrayUtils;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,9 +86,13 @@ public class BuildMetrics {
         bm.startingUser = getUser(build);
         bm.topLevelDir = getTopLevelDir(build);
         bm.builtUnderSixMin = bm.totalDuration / 1000 / 60 < 6;
-        bm.jobDirectory = build.getRootDir().getPath();
+        bm.jobDirectory = getJobDir(build);
         bm.jenkinsUrl = getJenkinsUrl();
         return bm;
+    }
+
+    private static String getJobDir(Run<?, ?> build) {
+        return new File(build.getParent().getFullName()).getParent();
     }
 
     private static String getJenkinsUrl() {
