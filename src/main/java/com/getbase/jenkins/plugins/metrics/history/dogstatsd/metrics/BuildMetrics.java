@@ -1,7 +1,9 @@
 package com.getbase.jenkins.plugins.metrics.history.dogstatsd.metrics;
 
+import com.getbase.jenkins.plugins.metrics.history.dogstatsd.properties.DogTag;
 import hudson.model.*;
 import jenkins.metrics.impl.TimeInQueueAction;
+import jenkins.model.Jenkins;
 import org.apache.commons.lang.ArrayUtils;
 
 import java.util.HashMap;
@@ -19,6 +21,8 @@ public class BuildMetrics {
     private static final String AUTOMATED_RUN = "automated_run";
     private static final String TOP_LEVEL_DIRECTORY = "top_level_dir";
     private static final String BUILT_UNDER_SIX_MIN = "build_under_six_min";
+    private static final String JOB_DIRECTORY = "job_directory";
+    private static final String JENKINS_URL = "jenkins_url";
 
     public String jobName;
     public Integer buildNumber;
@@ -34,6 +38,9 @@ public class BuildMetrics {
     public long totalDuration;
     private String topLevelDir;
     private boolean builtUnderSixMin;
+    private String jobDirectory;
+    private String jenkinsUrl;
+    public Map<String, String> customTags;
 
     private String getTag(String key, String value) {
         return key + ":" + value;
@@ -49,10 +56,15 @@ public class BuildMetrics {
                 getTag(USERNAME, startingUser),
                 getTag(TOP_LEVEL_DIRECTORY, topLevelDir),
                 getTag(BUILT_UNDER_SIX_MIN, builtUnderSixMin ? "true" : "false"),
-                getTag(AUTOMATED_RUN, startingUser != null ? "false" : "true")
+                getTag(AUTOMATED_RUN, startingUser != null ? "false" : "true"),
+                getTag(JOB_DIRECTORY, jobDirectory),
+                getTag(JENKINS_URL, jenkinsUrl),
         };
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             tags = (String[]) ArrayUtils.add(tags, getTag(PARAMETER + "." + entry.getKey(), entry.getValue()));
+        }
+        for (Map.Entry<String, String> entry : customTags.entrySet()) {
+            tags = (String[]) ArrayUtils.add(tags, getTag(entry.getKey(), entry.getValue()));
         }
         return tags;
     }
@@ -69,10 +81,21 @@ public class BuildMetrics {
         bm.jobUrl = build.getParent().getAbsoluteUrl();
         bm.buildUrl = bm.jobUrl + build.getNumber();
         bm.parameters = getBuildParameters(build);
+        bm.customTags = getCustomTags(build);
         bm.startingUser = getUser(build);
         bm.topLevelDir = getTopLevelDir(build);
         bm.builtUnderSixMin = bm.totalDuration / 1000 / 60 < 6;
+        bm.jobDirectory = build.getRootDir().getPath();
+        bm.jenkinsUrl = getJenkinsUrl();
         return bm;
+    }
+
+    private static String getJenkinsUrl() {
+        Jenkins instance = Jenkins.getInstanceOrNull();
+        if (instance != null) {
+            return instance.getRootUrl();
+        }
+        return "";
     }
 
     private static String getTopLevelDir(Run<?, ?> build) {
@@ -113,20 +136,30 @@ public class BuildMetrics {
 
     private static Map<String, String> getBuildParameters(Run build) {
         List<ParametersAction> actions = build.getActions(ParametersAction.class);
-        if (actions != null) {
-            Map<String, String> parametersMap = new HashMap<>();
-            for (ParametersAction action : actions) {
-                List<ParameterValue> parameters = action.getParameters();
-                if (parameters != null) {
-                    for (ParameterValue parameter : parameters) {
-                        String name = parameter.getName();
-                        Object value = parameter.getValue();
-                        parametersMap.put(name, value != null ? value.toString() : "");
-                    }
+        Map<String, String> parametersMap = new HashMap<>();
+        for (ParametersAction action : actions) {
+            List<ParameterValue> parameters = action.getParameters();
+            if (parameters != null) {
+                for (ParameterValue parameter : parameters) {
+                    String name = parameter.getName();
+                    Object value = parameter.getValue();
+                    parametersMap.put(name, value != null ? value.toString() : "");
                 }
             }
-            return parametersMap;
         }
-        return null;
+        return parametersMap;
+    }
+
+    private static Map<String, String> getCustomTags(Run<?, ?> build) {
+        List<DogTag.DogTagAction> actions = build.getActions(DogTag.DogTagAction.class);
+        Map<String, String> tagsMap = new HashMap<>();
+        for (DogTag.DogTagAction action : actions) {
+            String key = action.getKey();
+            String value = action.getValue();
+            if (key != null && value != null) {
+                tagsMap.put(key, value);
+            }
+        }
+        return tagsMap;
     }
 }
