@@ -50,19 +50,19 @@ public class DogTag extends Step {
         @CheckForNull
         @Override
         public String getIconFileName() {
-            return "DogTagAction";
+            return null;
         }
 
         @CheckForNull
         @Override
         public String getDisplayName() {
-            return "DogTagAction";
+            return null;
         }
 
         @CheckForNull
         @Override
         public String getUrlName() {
-            return "DogTagAction";
+            return null;
         }
 
         public String getKey() {
