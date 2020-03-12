@@ -76,7 +76,7 @@ public class BuildMetrics {
         bm.queueingDuration = getQueueingDuration(build);
         bm.totalDuration = bm.buildDuration + bm.queueingDuration;
         bm.buildResult = getResult(build);
-        bm.buildResultNum = bm.buildResult.equals("SUCCESS") ? 1 : 0;
+        bm.buildResultNum = bm.buildResult.equals("SUCCESS") || bm.buildResult.equals("UNSTABLE") ? 1 : 0;
         bm.buildNumber = build.getNumber();
         bm.jobName = build.getParent().getFullName();
         bm.jobUrl = build.getParent().getAbsoluteUrl();
